@@ -1,0 +1,26 @@
+{
+    "name": "rabbithq-server",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "tsx watch index.ts",
+        "build": "vite build",
+        "start": "node dist/production.mjs",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "cors": "^2.8.5",
+        "dotenv": "^17.2.1",
+        "express": "^5.1.0",
+        "serverless-http": "^3.2.0",
+        "zod": "^3.25.76"
+    },
+    "devDependencies": {
+        "@types/cors": "^2.8.19",
+        "@types/express": "^5.0.3",
+        "@types/node": "^24.2.1",
+        "tsx": "^4.20.3",
+        "typescript": "^5.9.2",
+        "vite": "^7.3.1"
+    }
+}
