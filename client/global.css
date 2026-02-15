@@ -6,6 +6,7 @@
 @tailwind utilities;
 
 @layer base {
+
   /**
    * Tailwind CSS theme
    * tailwind.config.ts expects the following color variables to be expressed as HSL values.
@@ -99,9 +100,13 @@
 }
 
 @layer base {
+  /* * {
+    @apply border-border;
+  }
+
   body {
     @apply bg-background text-foreground;
-  }
+  } */
 
   :where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) {
     overflow-wrap: anywhere;
