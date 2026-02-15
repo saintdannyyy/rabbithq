@@ -1,51 +1,57 @@
-# Fusion Starter
+# RabbitHQ
 
-A production-ready full-stack React application template with integrated Express server, featuring React Router 6 SPA mode, TypeScript, Vitest, Zod and modern tooling.
+A monorepo full-stack React + Express application. Client and server are fully standalone — each has its own `package.json`, `tsconfig.json`, and tooling configs.
 
-While the starter comes with a express server, only create endpoint when strictly neccesary, for example to encapsulate logic that must leave in the server, such as private keys handling, or certain DB operations, db...
+Only create server endpoints when strictly necessary (e.g. private key handling, DB operations).
 
 ## Tech Stack
 
 - **NPM**: Prefer npm
 - **Frontend**: React 18 + React Router 6 (spa) + TypeScript + Vite + TailwindCSS 3
-- **Backend**: Express server integrated with Vite dev server
-- **Testing**: Vitest
+- **Backend**: Express server + TypeScript
+- **Testing**: Vitest (client)
 - **UI**: Radix UI + TailwindCSS 3 + Lucide React icons
 
 ## Project Structure
 
 ```
-client/                   # React SPA frontend
-├── index.html            # Vite HTML entry point
-├── public/               # Static assets (images, favicon, robots.txt)
-├── pages/                # Route components (Index.tsx = home)
-├── components/ui/        # Pre-built UI component library
-├── App.tsx               # App entry point with SPA routing setup
-├── main.tsx              # React DOM entry
-└── global.css            # TailwindCSS 3 theming and global styles
+client/                     # Standalone React SPA
+├── package.json            # Client dependencies & scripts
+├── tsconfig.json           # Client TypeScript config
+├── vite.config.ts          # Vite config (proxies /api to server)
+├── tailwind.config.ts      # TailwindCSS config
+├── postcss.config.js       # PostCSS config
+├── components.json         # shadcn/ui config
+├── index.html              # Vite HTML entry
+├── main.tsx                # React DOM entry
+├── App.tsx                 # SPA routing setup
+├── global.css              # TailwindCSS theming & global styles
+├── public/                 # Static assets (images, favicon)
+├── pages/                  # Route page components
+├── components/ui/          # Pre-built UI component library
+├── hooks/                  # Custom React hooks
+└── lib/                    # Utilities (cn, etc.)
 
-server/                   # Express API backend
-├── index.ts              # Main server setup (express config + routes)
-├── node-build.ts         # Production server entry
-├── routes/               # API handlers
-├── shared/               # Types shared between client & server
-│   └── api.ts            # Shared API interfaces
-└── netlify/              # Netlify serverless functions
+server/                     # Standalone Express API
+├── package.json            # Server dependencies & scripts
+├── tsconfig.json           # Server TypeScript config
+├── vite.config.ts          # Production build config
+├── app.ts                  # Express app factory (createServer)
+├── index.ts                # Dev entry point (listens on port)
+├── node-build.ts           # Production entry (serves SPA + API)
+├── routes/                 # API route handlers
+├── shared/                 # Shared types (API interfaces)
+│   └── api.ts
+└── netlify/                # Netlify serverless functions
     └── functions/
-        └── api.ts        # Serverless entry point
+        └── api.ts
 ```
 
-## Key Features
+Root files: `package.json` (orchestration scripts), `.gitignore`, `.prettierrc`, `.npmrc`, `netlify.toml`, `AGENTS.md`
 
-## SPA Routing System
+## SPA Routing
 
-The routing system is powered by React Router 6:
-
-- `client/pages/Index.tsx` represents the home page.
-- Routes are defined in `client/App.tsx` using the `react-router-dom` import
-- Route files are located in the `client/pages/` directory
-
-For example, routes can be defined with:
+Routes are defined in `client/App.tsx` using React Router 6:
 
 ```typescript
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -57,125 +63,80 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 </Routes>;
 ```
 
+Page components live in `client/pages/`.
+
 ### Styling System
 
 - **Primary**: TailwindCSS 3 utility classes
-- **Theme and design tokens**: Configure in `client/global.css`
-- **UI components**: Pre-built library in `client/components/ui/`
-- **Utility**: `cn()` function combines `clsx` + `tailwind-merge` for conditional classes
+- **Theme and design tokens**: `client/global.css`
+- **UI components**: `client/components/ui/`
+- **Utility**: `cn()` function in `client/lib/utils.ts`
 
-```typescript
-// cn utility usage
-className={cn(
-  "base-classes",
-  { "conditional-class": condition },
-  props.className  // User overrides
-)}
-```
+### Express Server
 
-### Express Server Integration
-
-- **Development**: Single port (3000) for both frontend/backend
-- **Hot reload**: Both client and server code
+- **Dev**: Server runs on port 3001, client proxies `/api/*` to it
+- **Production**: Server serves the built SPA and handles API routes
 - **API endpoints**: Prefixed with `/api/`
 
 #### Example API Routes
 
-- `GET /api/ping` - Simple ping api
+- `GET /api/ping` - Simple ping
 - `GET /api/demo` - Demo endpoint
 
 ### Shared Types
 
-Import consistent types in both client and server:
+Server owns shared types in `server/shared/api.ts`. Server imports use relative paths:
 
 ```typescript
-import { DemoResponse } from "@shared/api";
+import { DemoResponse } from "../shared/api";
 ```
 
 Path aliases:
 
-- `@shared/*` - Shared folder
-- `@/*` - Client folder
+- `@/*` — resolves to `client/*` (client-side only)
 
 ## Development Commands
 
+From the **root**:
+
 ```bash
-pnpm dev        # Start dev server (client + server)
-pnpm build      # Production build
-pnpm start      # Start production server
-pnpm typecheck  # TypeScript validation
-pnpm test          # Run Vitest tests
+npm run dev           # Start both client + server
+npm run dev:client    # Start client only (port 3000)
+npm run dev:server    # Start server only (port 3001)
+npm run build         # Build both
+npm run start         # Start production server
+npm run typecheck     # Typecheck both
+npm run test          # Run client tests
+npm run install:all   # Install deps in both client/ and server/
+```
+
+From **client/** or **server/** directly:
+
+```bash
+npm run dev           # Start that service
+npm run build         # Build that service
+npm run typecheck     # Typecheck that service
 ```
 
 ## Adding Features
 
-### Add new colors to the theme
-
-Open `client/global.css` and `tailwind.config.ts` and add new tailwind colors.
-
 ### New API Route
 
-1. **Optional**: Create a shared interface in `server/shared/api.ts`:
-
-```typescript
-export interface MyRouteResponse {
-  message: string;
-  // Add other response properties here
-}
-```
-
-2. Create a new route handler in `server/routes/my-route.ts`:
-
-```typescript
-import { RequestHandler } from "express";
-import { MyRouteResponse } from "@shared/api"; // Optional: for type safety
-
-export const handleMyRoute: RequestHandler = (req, res) => {
-  const response: MyRouteResponse = {
-    message: "Hello from my endpoint!",
-  };
-  res.json(response);
-};
-```
-
-3. Register the route in `server/index.ts`:
-
-```typescript
-import { handleMyRoute } from "./routes/my-route";
-
-// Add to the createServer function:
-app.get("/api/my-endpoint", handleMyRoute);
-```
-
-4. Use in React components with type safety:
-
-```typescript
-import { MyRouteResponse } from "@shared/api"; // Optional: for type safety
-
-const response = await fetch("/api/my-endpoint");
-const data: MyRouteResponse = await response.json();
-```
+1. Optionally define a type in `server/shared/api.ts`
+2. Create handler in `server/routes/my-route.ts`
+3. Register in `server/app.ts`
 
 ### New Page Route
 
-1. Create component in `client/pages/MyPage.tsx`
-2. Add route in `client/App.tsx`:
+1. Create `client/pages/MyPage.tsx`
+2. Add `<Route path="/my-page" element={<MyPage />} />` in `client/App.tsx`
 
-```typescript
-<Route path="/my-page" element={<MyPage />} />
-```
+### New Theme Colors
+
+Edit `client/global.css` and `client/tailwind.config.ts`.
 
 ## Production Deployment
 
-- **Standard**: `pnpm build`
-- **Binary**: Self-contained executables (Linux, macOS, Windows)
-- **Cloud Deployment**: Use either Netlify or Vercel via their MCP integrations for easy deployment. Both providers work well with this starter template.
-
-## Architecture Notes
-
-- Single-port development with Vite + Express integration
-- TypeScript throughout (client, server, shared)
-- Full hot reload for rapid development
-- Production-ready with multiple deployment options
-- Comprehensive UI component library included
-- Type-safe API communication via shared interfaces
+- **Standard**: `npm run build` from root
+- **Netlify**: Configured via `netlify.toml`
+- **Manual**: `cd server && npm start` (serves built SPA + API)
